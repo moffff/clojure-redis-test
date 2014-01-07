@@ -1,10 +1,10 @@
 (ns redis-test.core
   (:gen-class)
   (:use [compojure.core :only [defroutes GET]]
-        [clojure.tools.cli :only [cli]]
         org.httpkit.server
         )
   (:require [taoensso.carmine :as car :refer (wcar)]
+            [clojure.tools.cli :refer [parse-opts]]
             [clojure.data.json :as json]))
 
 (def server1-conn {:pool {} :spec {:uri (System/getenv "REDIS_URL") :timeout-ms 15}})
@@ -28,11 +28,18 @@
 (defroutes app
   (GET "/users/:id" [id] (show-request id)))
 
+(def cli-options
+  [["-p" "--port PORT" "Port number"
+    :default 8080
+    :parse-fn #(Integer/parseInt %)
+    :validate [#(< 0 % 0x10000) "Must be a number between 0 and 65536"]]
+  ["-h" "--help"]])
 
 (defn -main [& args]
-  (let  [[opts args banner] (cli *command-line-args*
-     ["-p" "--port" "Listen on this port" :default 8080 :parse-fn #(Integer. %) ]
-     ["-h" "--help" "Show this help" :default false :flag true ])]
+  (let  [{opts :options banner :summary errors :errors} (parse-opts args cli-options)]
+    (when-not (empty? errors)
+      (apply println errors)
+      (System/exit 1))
     (when (:help opts)
       (println banner)
       (System/exit 0))

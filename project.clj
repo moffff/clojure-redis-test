@@ -1,4 +1,4 @@
-(defproject redis-test "0.1.2-SNAPSHOT"
+(defproject redis-test "v0.1.1-SNAPSHOT"
   :description "FIXME: write description"
   :url "http://example.com/FIXME"
   :license {:name "Eclipse Public License"
